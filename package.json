@@ -13,5 +13,14 @@
   "dependencies": {
     "dotenv": "^17.4.2",
     "typescript": "^6.0.3"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mcfluffles/flca-dashboard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Mcfluffles/flca-dashboard/issues"
+  },
+  "homepage": "https://github.com/Mcfluffles/flca-dashboard#readme"
 }
