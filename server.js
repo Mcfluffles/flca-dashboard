@@ -2,6 +2,10 @@ import express from "express";
 import cors from "cors";
 import pg from "pg";
 
+//
+import { initializeData } from "./initializeData.js";
+import { getProductionByCompany } from "./reports/getProductionByCompany.js";
+
 const { Pool } = pg;
 
 const app = express();
@@ -34,7 +38,21 @@ const pool = new Pool({
 });
 
 app.get("/", (req, res) => {
-    res.json({ ok: true, service: "PFLO API" });
+    res.json({ ok: true, service: "FLCA API" });
+});
+
+
+
+app.get("/api/member-production", async (req, res) => {
+    try {
+        const dashboard = await initializeData();
+        const table = getProductionByCompany(dashboard);
+
+        res.json(table);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to build member production table" });
+    }
 });
 
 app.get("/api/routes", async (req, res) => {
@@ -63,5 +81,5 @@ app.get("/api/routes", async (req, res) => {
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
-    console.log(`PFLO API listening on port ${port}`);
+    console.log(`FLCA API listening on port ${port}`);
 });
