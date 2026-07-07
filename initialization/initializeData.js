@@ -1,21 +1,21 @@
 //Data initialization function, gets all market, CX, and Commodity Data
 //To do: expand to building data, and whatever else we need.
 
-import { pullExchangeIdentity } from "./data/pullExchanges.js";
-import { pullCommodityLookup } from "./data/pullCommodityLookup.js";
-import { pullMarketData } from "./data/pullMarketData.js";
-import { pullFullOrderBooks } from "./data/pullFullOrderBooks.js";
-import { pullFleetData } from "./data/pullFleetData.js";
-import { pullStorageData } from "./data/pullStorageData.js";
-import { pullPlanetData } from "./data/pullPlanetData.js";
-import { pullFlightData } from "./data/pullFlightData.js";
-import { pullRecipeData } from "./data/pullRecipeData.js";
-import { pullBuildingData } from "./data/pullBuildingData.js";
-import { pullProductionData } from "./data/pullProductionData.js";
-import { pullWorkforceData } from "./data/pullWorkforceData.js";
+import { pullExchangeIdentity } from "../data/pullExchanges.js";
+import { pullCommodityLookup } from "../data/pullCommodityLookup.js";
+import { pullMarketData } from "../data/pullMarketData.js";
+import { pullFullOrderBooks } from "../data/pullFullOrderBooks.js";
+import { pullFleetData } from "../data/pullFleetData.js";
+import { pullStorageData } from "../data/pullStorageData.js";
+import { pullPlanetData } from "../data/pullPlanetData.js";
+import { pullFlightData } from "../data/pullFlightData.js";
+import { pullRecipeData } from "../data/pullRecipeData.js";
+import { pullBuildingData } from "../data/pullBuildingData.js";
+import { pullProductionData } from "../data/pullProductionData.js";
+import { pullWorkforceData } from "../data/pullWorkforceData.js";
 
 //import { CACHE_TTLS, getCachedData } from "./cache/functions/cacheFunctions.js";
-import { getCachedData } from "./cache/functions/cacheFunctions.js";
+import { getCachedData } from "../cache/functions/cacheFunctions.js";
 
 const CACHE_TTLS = {
     static: 1,

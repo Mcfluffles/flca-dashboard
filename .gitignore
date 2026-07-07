@@ -2,3 +2,5 @@
 .vs/
 node_modules/
 cache/snapshots/
+deprecated/
+output/

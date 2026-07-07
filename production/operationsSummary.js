@@ -19,6 +19,8 @@ export function operationsSummary(
         const netPerDay =
             outputPerDay - inputPerDay;
 
+        const netAvgValuePerDay = inv.AverageMarketValue / inv.Amount * netPerDay;
+
         const daysRemaining =
             netPerDay < 0
                 ? Number((inv.Amount / Math.abs(netPerDay)).toFixed(1))
@@ -47,6 +49,7 @@ export function operationsSummary(
             ProducedPerDay: outputPerDay,
             ConsumedPerDay: inputPerDay,
             NetPerDay: netPerDay,
+            NetAvgValuePerDay: Number(netAvgValuePerDay.toFixed(2)),
 
             DaysRemaining: daysRemaining ?? "∞",
             SortDaysRemaining: daysRemaining ?? 999999,
@@ -74,6 +77,7 @@ export function operationsSummaryByCompany(inventory, production, consumption) {
             const producedPerDay = prod?.OutputPerDay ?? 0;
             const consumedPerDay = cons?.InputPerDay ?? 0;
             const netPerDay = producedPerDay - consumedPerDay;
+            const netAvgValuePerDay = inv.AverageMarketValue / inv.Amount * netPerDay;
 
             const daysRemaining =
                 netPerDay < 0
@@ -113,6 +117,7 @@ export function operationsSummaryByCompany(inventory, production, consumption) {
                 ProducedPerDay: Number(producedPerDay.toFixed(2)),
                 ConsumedPerDay: Number(consumedPerDay.toFixed(2)),
                 NetPerDay: Number(netPerDay.toFixed(2)),
+                NetAvgValuePerDay: Number(netAvgValuePerDay.toFixed(2)),
 
                 DaysRemaining: daysRemaining ?? "∞",
                 SortDaysRemaining: daysRemaining ?? 999999,

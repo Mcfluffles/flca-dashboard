@@ -4,28 +4,9 @@
 
 // @ts-check
 
-import { initializeData } from "./initializeData.js";
-import { findShortages } from "./findShortages.js";
-import { findCriticalShortages } from "./findCriticalShortages.js";
-import { findOOSShortages } from "./findOOSShortages.js";
-import { findArbitrage } from "./findArbitrage.js";
-import { tradePlannerV1} from "./tradePlanner.js";
-import { routePlannerV1 } from "./routePlannerV1.js";
-import { inventoryRollup } from "./inventory/inventoryRollup.js";
-import { findMaterial } from "./inventory/findMaterial.js";
-import { findAllShips } from "./fleet/findAllShips.js";
-import { getBlueprintMaterials } from "./blueprints/getBlueprintMaterials.js";
-import { fleetRoutePlannerV1 } from "./fleetRoutePlanner.js";
-import { productionRollup } from "./production/productionRollup.js";
-import { operationsRollup, operationsRollupByCompany } from "./production/operationsRollup.js";
-import { consumptionRollup } from "./production/consumptionRollup.js";
-import { operationsSummary, operationsSummaryByCompany } from "./production/operationsSummary.js";
+import * as flca from "./function.js";
 
 import fs from "fs/promises";
-import { generateDashboardHTML } from "./display/generateDashboardHTML.js";
-
-
-import { shipBlueprints } from "./blueprints/ships/shipBlueprints.js";
 
 
 import "dotenv/config";
@@ -46,29 +27,29 @@ async function main() {
     */
 
     console.time("initializeData");
-    const dashboard = await initializeData();
+    const dashboard = await flca.initializeData();
     console.timeEnd("initializeData");    
 
     const inventory =
-        inventoryRollup(dashboard);
+        flca.inventoryRollup(dashboard);
 
     const production =
-        productionRollup(dashboard);
+        flca.productionRollup(dashboard);
 
     const consumption =
-        consumptionRollup(dashboard);
+        flca.consumptionRollup(dashboard);
 
     const operations =
-        operationsSummary(
+        flca.operationsSummary(
             inventory,
             production,
             consumption
         );
 
-    const fleet = findAllShips(dashboard);
+    const fleet = flca.findAllShips(dashboard);
 
     const operationsByCompany =
-        operationsSummaryByCompany(
+        flca.operationsSummaryByCompany(
             inventory,
             production,
             consumption
@@ -88,10 +69,6 @@ async function main() {
                 return b.NetPerDay - a.NetPerDay;
             })
     );
-
-
-   
-
 }
 
 main();

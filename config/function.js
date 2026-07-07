@@ -1,0 +1,1 @@
+export { companyConfigs } from "./companies.js";
