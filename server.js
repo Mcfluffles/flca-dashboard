@@ -6,8 +6,22 @@ const { Pool } = pg;
 
 const app = express();
 
-app.use(cors({
+/*app.use(cors({
     origin: ["https://pflo.flca.space", "http://localhost:5500"]
+}));*/
+
+app.use(cors({
+    origin: function (origin, callback) {
+        if (
+            !origin ||
+            origin === "https://pflo.flca.space" ||
+            /^http:\/\/localhost:\d+$/.test(origin)
+        ) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    }
 }));
 
 app.use(express.json());
