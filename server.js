@@ -46,7 +46,7 @@ app.get("/api/member-production", async (req, res) => {
     try {
         const forceRefresh = req.query.refresh === "true";
 
-        const table = await getCachedJson(
+        const table = await flca.getCachedJson(
             pool,
             "member-production",
             15 * 60 * 1000,
