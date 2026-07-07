@@ -44,8 +44,18 @@ app.get("/", (req, res) => {
 
 app.get("/api/member-production", async (req, res) => {
     try {
-        const dashboard = await flca.initializeData();
-        const table = flca.getProductionByCompany(dashboard);
+        const forceRefresh = req.query.refresh === "true";
+
+        const table = await getCachedJson(
+            pool,
+            "member-production",
+            15 * 60 * 1000,
+            async () => {
+                const dashboard = await flca.initializeData();
+                return flca.getProductionByCompany(dashboard);
+            },
+            forceRefresh
+        );
 
         res.json(table);
     } catch (err) {
