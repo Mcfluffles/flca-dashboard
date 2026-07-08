@@ -61,7 +61,7 @@ export async function initializeData(pool, forceRefresh = false) {
     const marketData = await getCachedData(
         pool,
         "market-cache",
-        CACHE_TTLS.static,
+        CACHE_TTLS.market,
         async () => {
 
             console.time("Market Data")
@@ -86,7 +86,7 @@ export async function initializeData(pool, forceRefresh = false) {
     const opsData = await getCachedData(
         pool,
         "ops-cache",
-        CACHE_TTLS.static,
+        CACHE_TTLS.ops,
         async () => {
 
             console.time("Ops Data")
