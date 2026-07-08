@@ -3,7 +3,7 @@ import { productionRollup } from "../production/productionRollup.js";
 import { consumptionRollup } from "../production/consumptionRollup.js";
 import { operationsSummaryByCompany } from "../production/operationsSummary.js";
 
-export function getProductionByCompany(dashboard) {
+export function getConsumptionByCompany(dashboard) {
     const inventory = inventoryRollup(dashboard);
     const production = productionRollup(dashboard);
     const consumption = consumptionRollup(dashboard);
@@ -21,6 +21,6 @@ export function getProductionByCompany(dashboard) {
                 return a.CompanyCode.localeCompare(b.CompanyCode);
             }
 
-            return b.NetPerDay - a.NetPerDay;
+            return a.NetPerDay - b.NetPerDay;
         });
 }
