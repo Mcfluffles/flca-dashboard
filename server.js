@@ -40,7 +40,41 @@ app.get("/", (req, res) => {
     res.json({ ok: true, service: "FLCA API" });
 });
 
-app.get("/api/member-production", async (req, res) => {
+///
+/// INTERNAL TRADING
+///
+
+app.get("/api/internal-trade-opportunities", async (req, res) => {
+    try {
+        const forceRefresh = req.query.refresh === "true";
+        const dashboard = await flca.initializeData(pool, forceRefresh);
+
+        const inventory = flca.inventoryRollup(dashboard);
+        const production = flca.productionRollup(dashboard);
+        const consumption = flca.consumptionRollup(dashboard);
+
+        const ops = flca.operationsSummaryByCompany(
+            inventory,
+            production,
+            consumption
+        );
+
+        const trades = flca.getInternalTradeOpportunities(ops);
+
+        res.json(trades);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to build trade opportunities" });
+    }
+});
+
+
+
+///
+/// MEMBER PRODUCTION AND CONSUMPTION
+///
+
+app.get("/api/member-net-production", async (req, res) => {
     try {
         const forceRefresh = req.query.refresh === "true";
 
@@ -57,7 +91,7 @@ app.get("/api/member-production", async (req, res) => {
     }
 });
 
-app.get("/api/member-consumption", async (req, res) => {
+app.get("/api/member-net-consumption", async (req, res) => {
     try {
         const forceRefresh = req.query.refresh === "true";
 
@@ -73,6 +107,11 @@ app.get("/api/member-consumption", async (req, res) => {
         res.status(500).json({ error: "Failed to build member production table" });
     }
 });
+
+
+///
+/// CONFIGURATION
+///
 
 app.get("/api/companies", async (req, res) => {
     try {
