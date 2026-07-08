@@ -15,7 +15,7 @@ export function getProductionByCompany(dashboard) {
     );
 
     return operationsByCompany
-        .filter(o => o.NetPerDay < 0)
+        .filter(o => o.NetPerDay > 0)
         .sort((a, b) => {
             if (a.CompanyCode !== b.CompanyCode) {
                 return a.CompanyCode.localeCompare(b.CompanyCode);
