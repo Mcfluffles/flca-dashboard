@@ -14,18 +14,19 @@ import { pullBuildingData } from "../data/pullBuildingData.js";
 import { pullProductionData } from "../data/pullProductionData.js";
 import { pullWorkforceData } from "../data/pullWorkforceData.js";
 
-//import { CACHE_TTLS, getCachedData } from "./cache/functions/cacheFunctions.js";
+import { CACHE_TTLS, getCachedData } from "./cache/functions/cacheFunctions.js";
 import { getCachedData } from "../cache/functions/cacheFunctions.js";
 
-const CACHE_TTLS = {
-    static: 1,
-    market: 1,
-    ops:1
-};
+// const CACHE_TTLS = {
+//     static: 1,
+//     market: 1,
+//     ops:1
+// };
 
-export async function initializeData() {
+export async function initializeData(pool, forceRefresh = false) {
     const staticData = await getCachedData(
-        "./cache/snapshots/static-cache.json",
+        pool,
+        "static-cache",
         CACHE_TTLS.static,
         async () => {
             console.log("Pulling fresh static data");
@@ -45,12 +46,14 @@ export async function initializeData() {
                 buildings,
                 planets
             };
-        }
+        },
+        forceRefresh
     );
 
     const marketData = await getCachedData(
-        "./cache/snapshots/market-cache.json",
-        CACHE_TTLS.market,
+        pool,
+        "market-cache",
+        CACHE_TTLS.static,
         async () => {
             console.log("Pulling fresh market data");
             const [markets, orderBooks] =
@@ -63,12 +66,14 @@ export async function initializeData() {
                 markets,
                 orderBooks
             };
-        }
+        },
+        forceRefresh
     );
 
     const opsData = await getCachedData(
-        "./cache/snapshots/ops-cache.json",
-        CACHE_TTLS.ops,
+        pool,
+        "ops-cache",
+        CACHE_TTLS.static,
         async () => {
             console.log("Pulling fresh ops data");
             const [fleet, storage, flights, production, workforce] =
@@ -87,7 +92,8 @@ export async function initializeData() {
                 production,
                 workforce
             };
-        }
+        },
+        forceRefresh
     );
 
     return {

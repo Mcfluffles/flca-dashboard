@@ -40,22 +40,12 @@ app.get("/", (req, res) => {
     res.json({ ok: true, service: "FLCA API" });
 });
 
-
-
 app.get("/api/member-production", async (req, res) => {
     try {
         const forceRefresh = req.query.refresh === "true";
 
-        const table = await flca.getCachedJson(
-            pool,
-            "member-production",
-            15 * 60 * 1000,
-            async () => {
-                const dashboard = await flca.initializeData();
-                return flca.getProductionByCompany(dashboard);
-            },
-            forceRefresh
-        );
+        const dashboard = await flca.initializeData(pool, forceRefresh);
+        const table = flca.getProductionByCompany(dashboard);
 
         res.json(table);
     } catch (err) {

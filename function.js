@@ -9,3 +9,4 @@ export * from "./production/function.js";
 export * from "./reports/function.js";
 export * from "./tools/function.js";
 export * from "./api/function.js";
+export * from "./constants/constants.js";
