@@ -43,13 +43,22 @@ export async function writeCache(pool, cacheKey, fresh) {
     );
 }
 
-export async function getCachedData(pool, cacheKey, ttlMs, fetchFreshData, forceRefresh = false) {
+export async function getCachedData(
+    pool,
+    cacheKey,
+    ttlMs,
+    fetchFreshData,
+    forceRefresh = false
+) {
     if (!forceRefresh) {
         const cached = await readCache(pool, cacheKey, ttlMs);
 
         if (cached) {
+            console.log(`✓ Cache hit: ${cacheKey}`);
             return cached;
         }
+
+        console.log(`↻ Refreshing: ${cacheKey}`);
     }
 
     const fresh = await fetchFreshData();

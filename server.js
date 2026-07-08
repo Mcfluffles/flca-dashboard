@@ -44,13 +44,54 @@ app.get("/api/member-production", async (req, res) => {
     try {
         const forceRefresh = req.query.refresh === "true";
 
+        console.time("Initialize Data");
         const dashboard = await flca.initializeData(pool, forceRefresh);
+        console.timeEnd("Initialize Data");
+
         const table = flca.getProductionByCompany(dashboard);
 
         res.json(table);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Failed to build member production table" });
+    }
+});
+
+app.get("/api/member-consumption", async (req, res) => {
+    try {
+        const forceRefresh = req.query.refresh === "true";
+
+        console.time("Initialize Data");
+        const dashboard = await flca.initializeData(pool, forceRefresh);
+        console.timeEnd("Initialize Data");
+
+        const table = flca.getConsumptionByCompany(dashboard);
+
+        res.json(table);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to build member production table" });
+    }
+});
+
+app.get("/api/companies", async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                company_code AS "CompanyCode",
+                username AS "Username",
+                company_name AS "CompanyName",
+                is_active AS "IsActive",
+                sort_order AS "SortOrder"
+            FROM flca_companies
+            WHERE is_active = true
+            ORDER BY sort_order, company_code
+        `);
+
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to load companies" });
     }
 });
 

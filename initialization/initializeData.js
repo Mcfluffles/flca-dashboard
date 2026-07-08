@@ -29,23 +29,31 @@ export async function initializeData(pool, forceRefresh = false) {
         "static-cache",
         CACHE_TTLS.static,
         async () => {
-            console.log("Pulling fresh static data");
-            const [exchanges, materials, recipes, buildings, planets] =
-                await Promise.all([
-                    pullExchangeIdentity(),
-                    pullCommodityLookup(),
-                    pullRecipeData(),
-                    pullBuildingData(),
-                    pullPlanetData()
-                ]);
 
-            return {
-                exchanges,
-                materials,
-                recipes,
-                buildings,
-                planets
-            };
+            console.time("Static Data")
+
+            try { 
+                console.log("Pulling fresh static data");
+                const [exchanges, materials, recipes, buildings, planets] =
+                    await Promise.all([
+                        pullExchangeIdentity(),
+                        pullCommodityLookup(),
+                        pullRecipeData(),
+                        pullBuildingData(),
+                        pullPlanetData()
+                    ]);
+            
+
+                return {
+                    exchanges,
+                    materials,
+                    recipes,
+                    buildings,
+                    planets
+                };
+
+            } finally { console.timeEnd("Static Data") }
+
         },
         forceRefresh
     );
@@ -55,17 +63,22 @@ export async function initializeData(pool, forceRefresh = false) {
         "market-cache",
         CACHE_TTLS.static,
         async () => {
-            console.log("Pulling fresh market data");
-            const [markets, orderBooks] =
-                await Promise.all([
-                    pullMarketData(),
-                    pullFullOrderBooks()
-                ]);
 
-            return {
-                markets,
-                orderBooks
-            };
+            console.time("Market Data")
+
+            try {
+                console.log("Pulling fresh market data");
+                const [markets, orderBooks] =
+                    await Promise.all([
+                        pullMarketData(),
+                        pullFullOrderBooks()
+                    ]);
+
+                return {
+                    markets,
+                    orderBooks
+                };
+            } finally { console.timeEnd("Market Data") }
         },
         forceRefresh
     );
@@ -75,23 +88,28 @@ export async function initializeData(pool, forceRefresh = false) {
         "ops-cache",
         CACHE_TTLS.static,
         async () => {
-            console.log("Pulling fresh ops data");
-            const [fleet, storage, flights, production, workforce] =
-                await Promise.all([
-                    pullFleetData(),
-                    pullStorageData(),
-                    pullFlightData(),
-                    pullProductionData(),
-                    pullWorkforceData()
-                ]);
 
-            return {
-                fleet,
-                storage,
-                flights,
-                production,
-                workforce
-            };
+            console.time("Ops Data")
+
+            try {
+                console.log("Pulling fresh ops data");
+                const [fleet, storage, flights, production, workforce] =
+                    await Promise.all([
+                        pullFleetData(),
+                        pullStorageData(),
+                        pullFlightData(),
+                        pullProductionData(),
+                        pullWorkforceData()
+                    ]);
+
+                return {
+                    fleet,
+                    storage,
+                    flights,
+                    production,
+                    workforce
+                };
+            } finally { console.timeEnd("Ops Data") }
         },
         forceRefresh
     );

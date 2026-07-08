@@ -69,6 +69,13 @@ async function main() {
                 return b.NetPerDay - a.NetPerDay;
             })
     );
+
+    const fleetStatus = flca.findAllShips(dashboard);
+    console.table(fleetStatus);
+
+    const flights = dashboard.flights.AllFlights;
+    console.log(flights);
+
 }
 
 main();
@@ -196,11 +203,7 @@ main();
 //             }))
 //         )
 //     );
-// const fleetStatus = findAllShips(dashboard);
-// console.table(fleetStatus);
 
-// const flights = dashboard.flights.AllFlights;
-// console.log(flights);
 
 // console.time("routePlanner");
 // const plannedRoute = routePlannerV1(dashboard,
