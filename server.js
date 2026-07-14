@@ -134,10 +134,14 @@ app.get("/api/companies", async (req, res) => {
     }
 });
 
+///
+/// FLN Routing and Pricing
+///
+
 app.get("/api/routes", async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT route, service_type, fuel_cis, fuel_cat, notes
+            SELECT region, route, service_type, fuel_cis, fuel_cat, notes
             FROM route_fuel
             ORDER BY service_type, sort_order, route
         `);
@@ -155,6 +159,31 @@ app.get("/api/routes", async (req, res) => {
     //     console.error(error);
     //     res.status(500).json({ error: "Failed to load routes" });
     // }
+});
+
+app.get("/api/service-levels", async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                service_code AS "ServiceCode",
+                service_name AS "ServiceName",
+                delivery_days AS "DeliveryDays",
+                rate_cis AS "RateCIS",
+                rate_cat AS "RateCAT",
+                description AS "Description",
+                sort_order AS "SortOrder"
+            FROM service_levels
+            WHERE is_active = true
+            ORDER BY sort_order, service_name
+        `);
+
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            error: "Failed to load service levels"
+        });
+    }
 });
 
 
