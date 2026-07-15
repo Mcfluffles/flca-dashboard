@@ -186,6 +186,56 @@ app.get("/api/service-levels", async (req, res) => {
     }
 });
 
+export function registerConfigRoutes(app, pool) {
+
+    app.get("/api/operators", async (req, res) => {
+        try {
+            const result = await pool.query(`
+                SELECT
+                    operator_code AS "OperatorCode",
+                    operator_name AS "OperatorName",
+                    contact_url AS "ContactURL",
+                    notes AS "Notes"
+                FROM operators
+                WHERE is_active = true
+                ORDER BY operator_name
+            `);
+
+            res.json(result.rows);
+        } catch (err) {
+            console.error(err);
+
+            res.status(500).json({
+                error: "Failed to load operators"
+            });
+        }
+    });
+
+    app.get("/api/operator-routes", async (req, res) => {
+        try {
+            const result = await pool.query(`
+                SELECT
+                    operator_code AS "OperatorCode",
+                    origin_code AS "OriginCode",
+                    destination_code AS "DestinationCode",
+                    service_code AS "ServiceCode",
+                    notes AS "Notes"
+                FROM operator_routes
+                WHERE is_active = true
+                ORDER BY operator_code, origin_code, destination_code
+            `);
+
+            res.json(result.rows);
+        } catch (err) {
+            console.error(err);
+
+            res.status(500).json({
+                error: "Failed to load operator routes"
+            });
+        }
+    });
+}
+
 
 
 app.listen(port, () => {
