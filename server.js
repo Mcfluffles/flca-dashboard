@@ -212,16 +212,23 @@ app.get("/api/operators", async (req, res) => {
 app.get("/api/operator-routes", async (req, res) => {
     try {
         const result = await pool.query(`
-                SELECT
-                    operator_code AS "OperatorCode",
-                    origin_code AS "OriginCode",
-                    destination_code AS "DestinationCode",
-                    service_code AS "ServiceCode",
-                    notes AS "Notes"
-                FROM operator_routes
-                WHERE is_active = true
-                ORDER BY operator_code, origin_code, destination_code
-            `);
+             SELECT
+                opr.operator_code AS "OperatorCode",
+                opr.route_id AS "RouteId",
+                rf.origin_code AS "OriginCode",
+                rf.destination_code AS "DestinationCode",
+                rf.route AS "Route",
+                opr.notes AS "Notes"
+            FROM operator_routes opr
+            JOIN route_fuel rf
+                ON opr.route_id = rf.id
+            WHERE opr.is_active = true
+            ORDER BY
+                opr.operator_code,
+                rf.region,
+                rf.sort_order,
+                rf.route
+        `);
 
         res.json(result.rows);
     } catch (err) {
