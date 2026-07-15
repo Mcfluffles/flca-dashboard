@@ -141,7 +141,7 @@ app.get("/api/companies", async (req, res) => {
 app.get("/api/routes", async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT region, route, service_type, fuel_cis, fuel_cat, notes, origin_code, destination_code
+            SELECT region, route, service_type, fuel_cis, fuel_cat, notes, origin_code, destination_code, minimum_scu
             FROM route_fuel
             ORDER BY region, service_type, sort_order, route
         `);
