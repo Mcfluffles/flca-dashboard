@@ -194,7 +194,8 @@ export function registerConfigRoutes(app, pool) {
                 SELECT
                     operator_code AS "OperatorCode",
                     operator_name AS "OperatorName",
-                    contact_url AS "ContactURL",
+                    company_code AS "CompanyCode",
+                    discord_username AS "DiscordUsername",
                     notes AS "Notes"
                 FROM operators
                 WHERE is_active = true
