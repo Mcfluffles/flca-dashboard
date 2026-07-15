@@ -240,6 +240,62 @@ app.get("/api/operator-routes", async (req, res) => {
     }
 });
 
+app.get("/api/routes-v2", async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                rf.id,
+                rf.route,
+                rf.origin_code,
+                rf.destination_code,
+                rf.region,
+                rf.service_type,
+                rf.minimum_scu,
+                rf.fuel_cis,
+                rf.fuel_cat,
+                rf.notes,
+
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'OperatorCode', o.operator_code,
+                            'OperatorName', o.operator_name
+                        )
+                    ) FILTER (
+                        WHERE o.operator_code IS NOT NULL
+                    ),
+                    '[]'::json
+                ) AS operators
+
+            FROM route_fuel rf
+
+            LEFT JOIN operator_routes opr
+                ON opr.route_id = rf.id
+                AND opr.is_active = true
+
+            LEFT JOIN operators o
+                ON o.operator_code = opr.operator_code
+                AND o.is_active = true
+
+            GROUP BY rf.id
+
+            ORDER BY
+                rf.region,
+                rf.service_type,
+                rf.sort_order,
+                rf.route
+        `);
+
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+
+        res.status(500).json({
+            error: "Failed to load routes"
+        });
+    }
+});
+
 
 
 app.listen(port, () => {
