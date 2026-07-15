@@ -192,7 +192,6 @@ app.get("/api/operators", async (req, res) => {
                 SELECT
                     operator_code AS "OperatorCode",
                     operator_name AS "OperatorName",
-                    company_code AS "CompanyCode",
                     discord_username AS "DiscordUsername",
                     notes AS "Notes"
                 FROM operators
