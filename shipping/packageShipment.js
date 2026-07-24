@@ -1,5 +1,5 @@
-const MAX_BLOCK_WEIGHT = 500;
-const MAX_BLOCK_VOLUME = 500;
+const SCU_WEIGHT = 500;
+const SCU_VOLUME = 500;
 const EPSILON = 1e-9;
 
 function toFiniteNumber(value, fieldName) {
@@ -48,9 +48,9 @@ export function normalizeShipmentItems(materialLookup, submittedItems) {
             throw new Error(`${ticker} has invalid weight or volume data.`);
         }
 
-        if (unitWeight > MAX_BLOCK_WEIGHT + EPSILON || unitVolume > MAX_BLOCK_VOLUME + EPSILON) {
+        if (unitWeight > SCU_WEIGHT + EPSILON || unitVolume > SCU_VOLUME + EPSILON) {
             throw new Error(
-                `${ticker} cannot fit in a 500 t / 500 m³ contract block.`
+                `${ticker} cannot fit in a 500 t / 500 m³ Standard Cargo Unit.`
             );
         }
 
@@ -72,8 +72,10 @@ export function normalizeShipmentItems(materialLookup, submittedItems) {
     return [...combinedItems.values()];
 }
 
-function createBlock(number) {
+function createScu(number) {
     return {
+        scuNumber: number,
+        // Kept for compatibility with existing database and frontend code.
         blockNumber: number,
         weight: 0,
         volume: 0,
@@ -81,98 +83,116 @@ function createBlock(number) {
     };
 }
 
-function maximumQuantityThatFits(item, remainingWeight, remainingVolume) {
-    const byWeight = item.unitWeight > 0
-        ? Math.floor((remainingWeight + EPSILON) / item.unitWeight)
-        : Number.POSITIVE_INFINITY;
-
-    const byVolume = item.unitVolume > 0
-        ? Math.floor((remainingVolume + EPSILON) / item.unitVolume)
-        : Number.POSITIVE_INFINITY;
-
-    return Math.min(byWeight, byVolume);
+function loadScore(scu) {
+    return Math.max(scu.weight / SCU_WEIGHT, scu.volume / SCU_VOLUME);
 }
 
+function addItemToScu(scu, item, quantity) {
+    if (quantity <= 0) {
+        return;
+    }
+
+    const weight = quantity * item.unitWeight;
+    const volume = quantity * item.unitVolume;
+
+    const existing = scu.items.find(existingItem => existingItem.ticker === item.ticker);
+
+    if (existing) {
+        existing.quantity += quantity;
+        existing.weight += weight;
+        existing.volume += volume;
+    } else {
+        scu.items.push({
+            ticker: item.ticker,
+            name: item.name,
+            quantity,
+            weight,
+            volume
+        });
+    }
+
+    scu.weight += weight;
+    scu.volume += volume;
+}
+
+/**
+ * Builds the minimum number of SCUs from the shipment's aggregate weight and
+ * volume, then spreads whole material units as evenly as possible across them.
+ *
+ * This is intentionally not rigid 500/500 bin packing. In Prosperous Universe,
+ * the contract lines must use whole material quantities, while the carrying
+ * hull is sized by the aggregate SCU capacity. For example, 83,333 SF at
+ * 0.06/0.06 occupies 4,999.98/4,999.98 and therefore fits in 10 SCUs. The
+ * indivisible units are distributed as 8,334 in three SCUs and 8,333 in seven.
+ */
 export function packageShipment(normalizedItems) {
-    const blocks = [];
-    let currentBlock = createBlock(1);
+    const totalWeight = normalizedItems.reduce(
+        (total, item) => total + item.quantity * item.unitWeight,
+        0
+    );
+    const totalVolume = normalizedItems.reduce(
+        (total, item) => total + item.quantity * item.unitVolume,
+        0
+    );
+
+    const scuCount = Math.max(
+        1,
+        Math.ceil(Math.max(
+            totalWeight / SCU_WEIGHT,
+            totalVolume / SCU_VOLUME
+        ) - EPSILON)
+    );
+
+    const scus = Array.from({ length: scuCount }, (_, index) => createScu(index + 1));
 
     for (const item of normalizedItems) {
-        let quantityRemaining = item.quantity;
+        const baseQuantity = Math.floor(item.quantity / scuCount);
+        const remainder = item.quantity % scuCount;
 
-        while (quantityRemaining > 0) {
-            const remainingWeight = MAX_BLOCK_WEIGHT - currentBlock.weight;
-            const remainingVolume = MAX_BLOCK_VOLUME - currentBlock.volume;
-            let quantityToPack = Math.min(
-                quantityRemaining,
-                maximumQuantityThatFits(item, remainingWeight, remainingVolume)
-            );
-
-            if (!Number.isFinite(quantityToPack)) {
-                quantityToPack = quantityRemaining;
+        // Give every SCU its even share first.
+        if (baseQuantity > 0) {
+            for (const scu of scus) {
+                addItemToScu(scu, item, baseQuantity);
             }
+        }
 
-            if (quantityToPack <= 0) {
-                if (currentBlock.items.length === 0) {
-                    throw new Error(
-                        `${item.ticker} cannot fit in a 500 t / 500 m³ contract block.`
-                    );
-                }
+        // Place leftover whole units on the currently lightest SCUs. This keeps
+        // mixed-material shipments balanced without losing or inventing units.
+        if (remainder > 0) {
+            const lightest = [...scus]
+                .sort((a, b) => loadScore(a) - loadScore(b) || a.scuNumber - b.scuNumber)
+                .slice(0, remainder);
 
-                blocks.push(currentBlock);
-                currentBlock = createBlock(blocks.length + 1);
-                continue;
-            }
-
-            const itemWeight = quantityToPack * item.unitWeight;
-            const itemVolume = quantityToPack * item.unitVolume;
-
-            currentBlock.items.push({
-                ticker: item.ticker,
-                name: item.name,
-                quantity: quantityToPack,
-                weight: itemWeight,
-                volume: itemVolume
-            });
-            currentBlock.weight += itemWeight;
-            currentBlock.volume += itemVolume;
-            quantityRemaining -= quantityToPack;
-
-            const weightFull = currentBlock.weight >= MAX_BLOCK_WEIGHT - EPSILON;
-            const volumeFull = currentBlock.volume >= MAX_BLOCK_VOLUME - EPSILON;
-
-            if ((weightFull || volumeFull) && currentBlock.items.length > 0) {
-                blocks.push(currentBlock);
-                currentBlock = createBlock(blocks.length + 1);
+            for (const scu of lightest) {
+                addItemToScu(scu, item, 1);
             }
         }
     }
 
-    if (currentBlock.items.length > 0) {
-        blocks.push(currentBlock);
-    }
+    for (const scu of scus) {
+        scu.weight = Number(scu.weight.toFixed(6));
+        scu.volume = Number(scu.volume.toFixed(6));
 
-    for (const block of blocks) {
-        block.weight = Number(block.weight.toFixed(6));
-        block.volume = Number(block.volume.toFixed(6));
-
-        for (const item of block.items) {
+        for (const item of scu.items) {
             item.weight = Number(item.weight.toFixed(6));
             item.volume = Number(item.volume.toFixed(6));
         }
     }
 
-    return blocks;
+    return scus;
 }
 
 export function buildShipmentPlan(materialLookup, submittedItems) {
     const items = normalizeShipmentItems(materialLookup, submittedItems);
-    const blocks = packageShipment(items);
+    const scus = packageShipment(items);
 
     return {
         items,
-        blocks,
-        blockCount: blocks.length,
+        scus,
+        // Kept for compatibility with the current request persistence route.
+        blocks: scus,
+        scuCount: scus.length,
+        blockCount: scus.length,
         totalWeight: Number(
             items.reduce((total, item) => total + item.quantity * item.unitWeight, 0).toFixed(6)
         ),
