@@ -4,6 +4,7 @@ import pg from "pg";
 
 //
 import * as flca from "./function.js";
+import { registerShippingRequestRoutes } from "./shipping/registerShippingRequestRoutes.js";
 
 const { Pool } = pg;
 const app = express();
@@ -297,6 +298,8 @@ app.get("/api/routes-v2", async (req, res) => {
 });
 
 
+
+registerShippingRequestRoutes(app, pool, flca);
 
 app.listen(port, () => {
     console.log(`FLCA API listening on port ${port}`);
